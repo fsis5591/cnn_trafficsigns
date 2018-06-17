@@ -5,4 +5,4 @@ Código para treino da rede: TfgTS_tensorflow.py
 
 Código para detectar placas e cassificá-las: predict_from_dataset_cropping.py
 
-Nó para publicar as velocidades lineares e angulares de acordo com classificações: listener.py
+Nó para publicar as velocidades lineares e angulares de acordo com classificações: vel_pub.py
