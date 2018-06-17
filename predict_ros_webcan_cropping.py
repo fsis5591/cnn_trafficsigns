@@ -84,10 +84,6 @@ def cnn_model_fn(features, mode):
     return tf.estimator.EstimatorSpec(mode=mode, predictions=predictions)
 	
 
- # predictions = tf.argmax(input=logits, axis=1)
- # if mode == tf.estimator.ModeKeys.PREDICT:
- #   return predictions
-
 
 def detectcrop(image):
 	img_rgb=cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
@@ -105,14 +101,13 @@ def detectcrop(image):
 	upper_red = np.array([180,255,255])
 	mask1 = cv2.inRange(img_hsv, lower_red, upper_red)
 
-	# join my masks
+	# join masks
 	mask = mask0+mask1
 
 	# set my output img to zero everywhere except my mask
 	output_img = image.copy()
 	output_img[np.where(mask==0)] = 0
 
-	# or your HSV image, which I *believe* is what you want
 	output_hsv = img_hsv.copy()
 	output_img = cv2.bitwise_and(output_img, output_img, mask= mask)
 
@@ -179,53 +174,10 @@ class RosTensorFlow():
         #ret,cv_image_binary = cv2.threshold(cv_image_gray,128,255,cv2.THRESH_BINARY_INV)
         cv_image_28 = cv2.resize(cv_image_gray,(56,56))
         cv_image_28 = np.float32(cv_image_28)
-
-        
-##########--------------------------------------------------------------------------###############        
-#        circles = cv2.HoughCircles(cv_image_gray, cv2.HOUGH_GRADIENT, 1.2, 100)
-#        # ensure at least some circles were found
-#        if circles is not None:
-#	       # convert the (x, y) coordinates and radius of the circles to integers
-#	       circles = np.round(circles[0, :]).astype("int")
-#               radius = 0
-#               next_radius = 0    
-#               # loop over the (x, y) coordinates and radius of the circles
-#	       for (x, y, r) in circles:
-#                   radius = r
-#                   #crop_img = img[y1:y2, x1:x2]
-#                   #(x1,y1) as the top-left//(x2,y2) as the bottom-right 
-#                   x1 = x-r
-#                   x2 = x+r
-#                   y1 = y-r
-#                   y2 = y+r
-#                   crop_img = cv_image_gray[y1:y2, x1:x2]  #image crop
-#                   if radius > next_radius:
-#                       cv_image = crop_img
-#                   next_radius = radius   
-#	    ret,cv_image_binary = cv2.threshold(cv_image,128,255,cv2.THRESH_BINARY_INV) 
-#       crop_cv_image_28 = cv2.resize(cv_image_binary,(28,28))
-#	    cropped_cv_image_28 = np.float32(crop_cv_image_28)                
-#       #np_image = np.reshape(cv_image_28,(1,28,28,1))
-#########---------------------------------------------------------------------------####################
-
         predict_input_fn = tf.estimator.inputs.numpy_input_fn(x={"x":cv_image_28},num_epochs=1,shuffle=False)
-	
 	predictions = self.estimator.predict(input_fn=predict_input_fn)
-	#predictions = np.squeeze(predictions)
-        
-	#predictions = list(self.estimator.predict(input_fn=predict_input_fn))
-	#predictions = np.squeeze(predictions)	    
-        #predicted = (predictions)
-	       
-        #answer = np.argmax(predictions, 1)
- 
-	
-	
 	predct = next(predictions, None)
 	classes =  predct["classes"] 
-        #print("{}" .format(predicted))
-
-	#print(predictions["classes"])
         rospy.loginfo('%d' % classes)
         self._pub.publish(classes)
 	
